@@ -1,9 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:sensors/sensors.dart';
+//import "acceralation.dart";
+import "acceralation.dart" as acc;
+import 'package:http/http.dart' as http;
+import 'post.dart';
+import 'dart:convert';
+import 'dart:math';
+
 
 void main() => runApp(MyApp());
 
@@ -31,13 +35,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  Map<String, double> _accelerometerValues;
-  List<Map> _accelerometerValues_list = [];
+  Future<Post> post;
+
+  acc.Acceralation acceralation;
+  List<acc.Acceralation> acceralation_list = [];
 
   List<double> _gyroscopeValues;
 
   List<StreamSubscription<dynamic>> _streamSubscriptions = <StreamSubscription<dynamic>>[];
 
+  int step = 0;
   //x,y,z xは縦軸，yは横軸，zは奥行き
   //gyro : デバイスの回転を示す
 
@@ -46,74 +53,41 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     print("init start");
     getacceralation();
-    Timer.periodic(const Duration(seconds: 1), getList);
+    post = fetchPost();
+    Timer.periodic(const Duration(seconds: 2), getData);
   }
 
   @override
   Widget build(BuildContext context) {
-
-//    final List<String> accelerometer = _accelerometerValues?.map((double v) =>
-//        v.toStringAsFixed(1))?.toList();
-
-//    final String accel_x = _accelerometerValues.last[0].toStringAsFixed(2);
-//    final String accel_y = _accelerometerValues.last[1].toStringAsFixed(2);
-//    final String accel_z = _accelerometerValues.last[2].toStringAsFixed(2);
-
-//    print(_accelerometerValues_list);
     final List<String> gyroscopemeter = _gyroscopeValues?.map((double v) =>
         v.toStringAsFixed(1))?.toList();
     final String gyro_x = _gyroscopeValues[0].toStringAsFixed(2);
     final String gyro_y = _gyroscopeValues[1].toStringAsFixed(2);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+    return MaterialApp(
+      title: 'Fetch Data Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
-      body: Stack(
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              Text('Accelerometer: $_accelerometerValues',
-                style: TextStyle(fontSize: 15),
-              ),
-              Padding(padding: EdgeInsets.all(15)),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Fetch Data Example'),
+        ),
+        body: Center(
+          child: FutureBuilder<Post>(
+            future: post,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data.title);
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
 
-//              Text('ACCEL_X: $accel_x',
-//                style: TextStyle(fontSize: 15),
-//              ),
-//
-//              Padding(padding: EdgeInsets.all(15)),
-//
-//              Text("ACCEL_Y: $accel_y",
-//                style: TextStyle(fontSize: 15),
-//              ),
-//
-//              Padding(padding: EdgeInsets.all(15)),
-//
-//              Text("ACCEL_Z: $accel_z",
-//                style: TextStyle(fontSize: 15),
-//              ),
-//
-//              Padding(padding: EdgeInsets.all(15)),
-
-              Text("GYRO_X: $gyro_x",
-                style: TextStyle(fontSize: 15),
-              ),
-
-              Padding(padding: EdgeInsets.all(15)),
-
-              Text("GYRO_Y: $gyro_y",
-                style: TextStyle(fontSize: 15),
-              ),
-
-              Padding(padding: EdgeInsets.all(15)),
-
-              Text("GYROSCOPEMETER: $gyroscopemeter",
-                style: TextStyle(fontSize: 15),
-              ),
-            ],
+              // By default, show a loading spinner.
+              return CircularProgressIndicator();
+            },
           ),
-        ],
+        ),
       ),
     );
   }
@@ -126,14 +100,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
-
   void getacceralation(){
     _streamSubscriptions
         .add(accelerometerEvents.listen((AccelerometerEvent event) {
       setState(() {
-        _accelerometerValues = {'x':event.x, 'y':event.y, 'z':event.z};
-        _accelerometerValues_list.add(_accelerometerValues);
+        acceralation = acc.Acceralation(event.x, event.y, event.z);
+        acceralation_list.add(acceralation);
       });
     }));
     _streamSubscriptions.add(gyroscopeEvents.listen((GyroscopeEvent event) {
@@ -143,8 +115,28 @@ class _MyHomePageState extends State<MyHomePage> {
     }));
   }
 
-  void getList(Timer timer){
-    print(_accelerometerValues_list);
-    _accelerometerValues_list.clear();
+  void getData(Timer timer){
+//    acceralation_list.forEach((e){
+//      print(e.getStep(e));
+//    });
+    acc.getStep(acceralation_list);
+    acceralation_list.clear();
+
+  }
+
+}
+
+Future<Post> fetchPost() async {
+  final response =
+  await http.get('https://jsonplaceholder.typicode.com/posts/1');
+
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON.
+    return Post.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    throw Exception('Failed to load post');
   }
 }
+
+
