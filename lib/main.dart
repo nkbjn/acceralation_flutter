@@ -4,10 +4,14 @@ import 'package:sensors/sensors.dart';
 //import "acceralation.dart";
 import "acceralation.dart" as acc;
 import 'package:http/http.dart' as http;
-import 'post.dart';
+import 'UserRegist.dart';
 import 'dart:convert';
 import 'dart:math';
 
+
+int step_sum = 0;
+int step_now = 0;
+String name = 'user_1';
 
 void main() => runApp(MyApp());
 
@@ -35,8 +39,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  Future<Post> post;
-
   acc.Acceralation acceralation;
   List<acc.Acceralation> acceralation_list = [];
 
@@ -44,21 +46,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<StreamSubscription<dynamic>> _streamSubscriptions = <StreamSubscription<dynamic>>[];
 
-  int step = 0;
   //x,y,z xは縦軸，yは横軸，zは奥行き
   //gyro : デバイスの回転を示す
 
   @override
   void initState() {
     super.initState();
-    print("init start");
     getacceralation();
-    post = fetchPost();
-    post.then((context) => {
-      print(context);
-    });
-    print('222222222222222222222222222222222222222222222222222');
+//    UserRegistRequest();
+//    UserStepRequest();
+//    post = fetchPost();
+//    post.then((context) => {
+//      print(context);
+//    });
+//    print('222222222222222222222222222222222222222222222222222');
     Timer.periodic(const Duration(milliseconds: 500), getData);
+    Timer.periodic(const Duration(milliseconds: 500), UserStepRequest);
+
   }
 
   @override
@@ -92,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
 //
 //                Padding(padding: EdgeInsets.all(15)),
 
-              Text('歩数 : ${step}',
+              Text('歩数 : ${step_sum}',
                 style: TextStyle(fontSize: 30),
               )
               ],
@@ -127,26 +131,54 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getData(Timer timer){
-    step += acc.getStep(acceralation_list);
+    step_now = acc.getStep(acceralation_list);
+    step_sum += step_now;
     acceralation_list.clear();
   }
 
 }
 
-Future<Post> fetchPost() async {
+//Future<Post> fetchPost() async {
+//
+//  final response =
+//  await http.get('http://d11f9a85.ngrok.io/location/update');
+//
+//  if (response.statusCode == 200) {
+////    If server returns an OK response, parse the JSON.
+////    print(response.body);
+////    print("111111111111111111111111111111111111111111111111111");
+//    return Post.fromJson(json.decode(response.body));
+//  } else {
+//    // If that response was not OK, throw an error.
+//    throw Exception('Failed to load post');
+//  }
+//}
 
-  final response =
-  await http.get('http://d11f9a85.ngrok.io/location/update');
 
-  if (response.statusCode == 200) {
-//    If server returns an OK response, parse the JSON.
-//    print(response.body);
-//    print("111111111111111111111111111111111111111111111111111");
-    return Post.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    throw Exception('Failed to load post');
+void UserRegistRequest() async {
+  String url = "http://d11f9a85.ngrok.io/location/update";
+  Map<String, String> headers = {'content-type': 'application/json'};
+  String body = json.encode({'name':'user_1','x':3,'y':4,'step':1});
+  http.Response resp = await http.post(url, headers: headers, body: body);
+
+  if (resp.statusCode != 200) {
+    return;
   }
+//  print(json.decode(resp.body));
+//  print(resp.body);
 }
 
 
+void UserStepRequest(Timer timer) async {
+  String url = "http://d11f9a85.ngrok.io/location/update";
+  Map<String, String> headers = {'content-type': 'application/json'};
+  String body = json.encode({'name':name,'step':step_now});
+  http.Response resp = await http.post(url, headers: headers, body: body);
+  if (resp.statusCode != 200) {
+    return;
+  }
+  print(json.decode(resp.body));
+//  print(resp.body);
+}
+
+//   UserRegist post = UserRegist(name:'user_1',x:2,y:2,step:4);
