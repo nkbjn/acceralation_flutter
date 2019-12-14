@@ -21,8 +21,8 @@ part 'acceralation.g.dart';
 
 
 final double upperMax = 3;
-final double upper = 1.5;
-final double downer = -1.5;
+final double upper = 1.25;
+final double downer = -1.25;
 final double downerMin = -3;
 
 List<int> putTogether = [];
@@ -52,9 +52,9 @@ int getStep(List<Acceralation> acc){
   orgList(putTogether);
   step = checkStep(organizeList);
 
-  print(putTogether);
-  print(organizeList);
-  print("step = ${step}");
+//  print(putTogether);
+//  print(organizeList);
+//  print("step = ${step}");
 
   putTogether.clear();
   organizeList.clear();

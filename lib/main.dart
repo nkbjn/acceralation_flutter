@@ -54,6 +54,10 @@ class _MyHomePageState extends State<MyHomePage> {
     print("init start");
     getacceralation();
     post = fetchPost();
+    post.then((context) => {
+      print(context);
+    });
+    print('222222222222222222222222222222222222222222222222222');
     Timer.periodic(const Duration(milliseconds: 500), getData);
   }
 
@@ -87,28 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
 //                ),
 //
 //                Padding(padding: EdgeInsets.all(15)),
-//
-//                Text("ACCEL_Y: $accel_y",
-//                  style: TextStyle(fontSize: 15),
-//                ),
-//
-//                Padding(padding: EdgeInsets.all(15)),
-//
-//                Text("GYRO_X: $gyro_x",
-//                  style: TextStyle(fontSize: 15),
-//                ),
-//
-//                Padding(padding: EdgeInsets.all(15)),
-//
-//                Text("GYRO_Y: $gyro_y",
-//                  style: TextStyle(fontSize: 15),
-//                ),
-//
-//                Padding(padding: EdgeInsets.all(15)),
-//
-//                Text("GYROSCOPEMETER: $gyroscopemeter",
-//                  style: TextStyle(fontSize: 15),
-//                ),
+
               Text('歩数 : ${step}',
                 style: TextStyle(fontSize: 30),
               )
@@ -144,22 +127,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void getData(Timer timer){
-//    acceralation_list.forEach((e){
-//      print(e.getStep(e));
-//    });
     step += acc.getStep(acceralation_list);
     acceralation_list.clear();
-
   }
 
 }
 
 Future<Post> fetchPost() async {
+
   final response =
-  await http.get('https://jsonplaceholder.typicode.com/posts/1');
+  await http.get('http://d11f9a85.ngrok.io/location/update');
 
   if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON.
+//    If server returns an OK response, parse the JSON.
+//    print(response.body);
+//    print("111111111111111111111111111111111111111111111111111");
     return Post.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
