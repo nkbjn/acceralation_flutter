@@ -54,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print("init start");
     getacceralation();
     post = fetchPost();
-    Timer.periodic(const Duration(seconds: 2), getData);
+    Timer.periodic(const Duration(milliseconds: 500), getData);
   }
 
   @override
@@ -73,20 +73,48 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text('Fetch Data Example'),
         ),
-        body: Center(
-          child: FutureBuilder<Post>(
-            future: post,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data.title);
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-
-              // By default, show a loading spinner.
-              return CircularProgressIndicator();
-            },
-          ),
+        body: Stack(
+          children: <Widget>[
+            Column(
+              children: <Widget>[
+//                Text('Accelerometer: $accelerometer',
+//                  style: TextStyle(fontSize: 15),
+//                ),
+//                Padding(padding: EdgeInsets.all(15)),
+//
+//                Text('ACCEL_X: $accel_x',
+//                  style: TextStyle(fontSize: 15),
+//                ),
+//
+//                Padding(padding: EdgeInsets.all(15)),
+//
+//                Text("ACCEL_Y: $accel_y",
+//                  style: TextStyle(fontSize: 15),
+//                ),
+//
+//                Padding(padding: EdgeInsets.all(15)),
+//
+//                Text("GYRO_X: $gyro_x",
+//                  style: TextStyle(fontSize: 15),
+//                ),
+//
+//                Padding(padding: EdgeInsets.all(15)),
+//
+//                Text("GYRO_Y: $gyro_y",
+//                  style: TextStyle(fontSize: 15),
+//                ),
+//
+//                Padding(padding: EdgeInsets.all(15)),
+//
+//                Text("GYROSCOPEMETER: $gyroscopemeter",
+//                  style: TextStyle(fontSize: 15),
+//                ),
+              Text('歩数 : ${step}',
+                style: TextStyle(fontSize: 30),
+              )
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -119,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
 //    acceralation_list.forEach((e){
 //      print(e.getStep(e));
 //    });
-    acc.getStep(acceralation_list);
+    step += acc.getStep(acceralation_list);
     acceralation_list.clear();
 
   }
